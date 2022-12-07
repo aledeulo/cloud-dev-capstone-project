@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ENV-configmap
+data:
+  REACT_APP_API_ID: API_ID
+  REACT_APP_AUTH_DOMAIN: AUTH_DOMAIN

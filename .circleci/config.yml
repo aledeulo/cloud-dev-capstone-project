@@ -96,8 +96,7 @@ jobs:
             cd ./backend &&\
             cat serverless_temp.yml |\
             sed "s|ENV_NAME|${ENV}|\
-            g;s|AWS_REGION|${AWS_DEFAULT_REGION}|g" > serverless.yml &&\
-            cat serverless.yml
+            g;s|AWS_REGION|${AWS_DEFAULT_REGION}|g" > serverless.yml
       - run:
           name: Install serverless plugins
           command: |
@@ -124,7 +123,6 @@ jobs:
       - run:
           name: check if the cluster exist
           command: |
-            aws eks describe-cluster --name ${ENV}-cluster --query 'cluster.name'
             export VALIDATE=$(aws eks describe-cluster --name ${ENV}-cluster --query 'cluster.name')
             echo "$VALIDATE" > ~/validate
             if cat ~/validate | grep "${ENV}-cluster"
@@ -142,28 +140,78 @@ jobs:
           node-type: t3.medium
           nodes-min: 1
           nodes-max: 2
-      
+          
+  deploy-to-eks:
+    <<: *python_cluster_docker_image
+    steps:
+      - checkout
+      - install_aws_cli
+      - run:
+          name: config secrets
+          command: |
+            cd ./client/deployment
+            export CLIENT_ID=$(echo -n '${CLIENT_ID}' | base64)
+            echo $CLIENT_ID
+            cat secrets_tmpl.yml |\
+              sed "s|ENV|${ENV}|\
+              g;s|CLIENT_ID|$CLIENT_ID|g" > secrets.yml
+      - run:
+          name: config configmap
+          command: |
+            export REACT_APP_API_ID=$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)
+            cat $REACT_APP_API_ID
+            cd ./client/deployment
+            cat configmap_tmpl.yml |\
+              sed "s|ENV|${ENV}|\
+              g;s|REACT_APP_AUTH_DOMAIN|${AUTH_DOMAIN}|\
+              g;s|REACT_APP_API_ID|$REACT_APP_API_ID|g" > configmap.yml
+      - run:
+          name: config deployment
+          command: |
+            cd ./client/deployment
+            cat deployment_tmpl.yml |\
+              sed "s|ENV|${ENV}|\
+              g;s|DOCKER_USER|${DOCKER_USER}|g" > deployment.yml
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: ${ENV}-cluster
+          install-kubectl: true
+          aws-region: ${AWS_DEFAULT_REGION}
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "./client/deployment/secrets.yml"
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "./client/deployment/configmap.yml"
+      - kubernetes/create-or-update-resource:
+          get-rollout-status: true
+          resource-file-path: "./client/deployment/deployment.yml"
+          resource-name: deployment/client-app
+          show-kubectl-command: true
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "./client/deployment/service.yml"
+      - run:
+          name: get deployment status
+          command:  kubectl get pods,deployments,svc      
 
 
 workflows:
   deployment-workflow:
-
     jobs:
-      # - create-aws-eks:
-      #     filters:
-      #       branches:
-      #         only: [main, dev]
-      # - build-backend:
-      #     filters:
-      #       branches:
-      #         only: [main, dev]
-      # - deploy-serverless-backend:
-      #     requires: [build-backend]
+      - create-aws-eks:
+          filters:
+            branches:
+              only: [main, dev]
+      - build-backend:
+          filters:
+            branches:
+              only: [main, dev]
+      - deploy-serverless-backend:
+          requires: [build-backend]
       - build-client:
           filters:
             branches:
               only: [main, dev]      
       - build-and-push-client-image:
           requires: [build-client]
+      - deploy-to-eks: 
+          requires: [deploy-serverless-backend, build-and-push-client-image, create-aws-eks]
       
 

@@ -1,10 +1,7 @@
-# Fetching the latest node image on apline linux
 FROM node:12.16.2-alpine
 
-# set working directory
 WORKDIR /app
 
-# install app dependencies
 COPY package.json ./
 COPY package-lock.json ./
 RUN npm install --silent
@@ -13,4 +10,5 @@ RUN npm install --silent
 COPY . ./
 
 # start app
-CMD ["npm", "start"]
+EXPOSE 3000
+CMD ["npm", "run", "start"]
