@@ -1,26 +1,53 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+orbs:
+  aws-eks: circleci/aws-eks@2.2.0
+  kubernetes: circleci/kubernetes@1.3
+
+node_docker_image: &node_docker_image
+  docker:
+    - image: cimg/node:12.16
+
+commands:
+  install_aws_cli:
+    description: Configure aws cli to deploy resources
+    steps:
+      - run:
+          name: install aws cli
+          command: pip install awscli
+  
+  destroy-serverless-deployment:
+    description: Destroy back-end cloudformation stacks given a workflow ID.    
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+              aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+              aws cloudformation delete-stack --stack-name udapeople-frontend-stack-${CIRCLE_WORKFLOW_ID:0:7}
+              aws cloudformation delete-stack --stack-name udapeople-backend-stack-${CIRCLE_WORKFLOW_ID:0:7}
+
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+  build-backend:
+    <<: *node_docker_image
     steps:
       - checkout
+      - restore_cache:
+          key: backend-build-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: Build back-end
+          command: |
+            cd ../backend && \
+            npm install && npm run build
+      - save_cache:
+          paths: 
+            - ./node_modules
+          key: backend-build-${CIRCLE_WORKFLOW_ID:0:7}
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  deployment-workflow:
     jobs:
-      - say-hello
+      - build-backend
+          filters:
+            branches:
+              only: [dev]
