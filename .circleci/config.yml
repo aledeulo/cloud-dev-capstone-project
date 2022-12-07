@@ -77,11 +77,20 @@ jobs:
             sed "s|ENV_NAME|${ENV}|\
             g;s|AWS_REGION|${AWS_REGION}|g" > serverless.yml &&\
             cat serverless.yml
+      - run:
+          name: Install serverless plugins
+          command: |
+            cd ./backend &&\
+            npm install serverless-webpack &&\
+            npm install serverless-aws-documentation &&\
+            npm install serverless-iam-roles-per-function &&\
+            npm install serverless-plugin-tracing &&\
+            npm install serverless-reqvalidator-plugin
       - run: 
           name: Configure serverless 
           command: |
             cd ./backend &&\
-            serverless && serverless login &&\
+            serverless &&\
             sls config credentials --provider aws --key ${AWS_ACCESS_KEY_ID} --secret ${AWS_SECRET_KEY_VALUE}
       - run:
           name: Deploy backend
