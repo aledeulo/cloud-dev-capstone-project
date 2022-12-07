@@ -33,10 +33,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: backend-build-${CIRCLE_WORKFLOW_ID:0:7}
-      # - run:
-      #     name: Install typescript
-      #     command: npm install -g typescript
+          key: backend-build-{{ checksum "./backend/package.json" }}
       - run:
           name: Build back-end
           command: |
@@ -44,7 +41,22 @@ jobs:
       - save_cache:
           paths: 
             - ./node_modules
-          key: backend-build-${CIRCLE_WORKFLOW_ID:0:7}
+          key: backend-build-{{ checksum "./backend/package.json" }}
+
+  build-frontend:
+    <<: *node_docker_image
+    steps:
+      - checkout
+      - restore_cache:
+          key: frontend-build-{{ checksum "./client/package.json" }}
+      - run:
+          name: Build front-end
+          command: |
+            cd ./client && npm install
+      - save_cache:
+          paths: 
+            - ./node_modules
+          key: frontend-build-{{ checksum "./client/package.json" }}
 
 workflows:
   deployment-workflow:
@@ -52,4 +64,9 @@ workflows:
       - build-backend:
           filters:
             branches:
-              only: [dev]
+              only: [main, dev]
+      - build-backend:
+          filters:
+            branches:
+              only: [main, dev]
+
