@@ -35,6 +35,9 @@ jobs:
       - restore_cache:
           key: backend-build-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
+          name: Install typescript
+          command: npm install -g typescript
+      - run:
           name: Build back-end
           command: |
             cd ./backend && \

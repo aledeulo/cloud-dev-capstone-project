@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Serverless TODO image app",
   "scripts": {
-    "test": "mocha --timeout 10000"
+    "test": "mocha --timeout 10000",
+    "build": "tsc"
   },
   "dependencies": {
     "@types/axios": "^0.14.0",
