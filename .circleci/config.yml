@@ -75,7 +75,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            docker build -t $IMAGE_NAME:latest . &&\
+            docker build -t $IMAGE_NAME:latest ./client &&\
             docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME ${DOCKER_USER}/$IMAGE_NAME:latest
 
   publish-client-image:
@@ -134,6 +134,7 @@ jobs:
       - run:
           name: check if the cluster exist
           command: |
+            aws eks describe-cluster --name ${ENV}-cluster --query 'cluster.name'
             export VALIDATE=$(aws eks describe-cluster --name ${ENV}-cluster --query 'cluster.name')
             echo "$VALIDATE" > ~/validate
             if cat ~/validate | grep "${ENV}-cluster"
@@ -156,6 +157,7 @@ jobs:
 
 workflows:
   deployment-workflow:
+
     jobs:
       - create-aws-eks:
           filters:
