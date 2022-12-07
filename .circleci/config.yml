@@ -4,7 +4,6 @@ orbs:
   aws-eks: circleci/aws-eks@2.2.0
   kubernetes: circleci/kubernetes@1.3
   aws-cli: circleci/aws-cli@3.1
-  serverless-framework: circleci/serverless-framework@2.0
 
 node_docker_image: &node_docker_image
   docker:
@@ -66,8 +65,9 @@ jobs:
       - checkout
       - restore_cache:
           key: backend-build-{{ checksum "./backend/package.json" }}
-      - aws-cli/setup
-      - serverless-framework/setup
+      - run:
+          name: Install serverless:
+          command: npm install -g serverless@2.21.1      
       - run:
           name: Update env vars in serverless.yml
           command: |
@@ -76,9 +76,15 @@ jobs:
             sed "s|ENV_NAME|${ENV}|\
             g;s|AWS_REGION|${AWS_REGION}|g" > serverless.yml &&\
             cat serverless.yml
+      - run: 
+          name: Configure serverless 
+          command: |
+            cd ./backend &&\
+            serverless && serverless login &&\
+            sls config credentials --provider aws --key ${AWS_ACCESS_KEY_ID} --secret ${AWS_SECRET_KEY_VALUE}
       - run:
           name: Deploy backend
-          command: cd ./backend && serverless deploy -v
+          command: cd ./backend && serverless deploy --aws-region ${AWS_REGION}
       
 
 
