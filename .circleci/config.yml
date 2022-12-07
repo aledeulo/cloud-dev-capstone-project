@@ -140,7 +140,7 @@ jobs:
           node-type: t3.medium
           nodes-min: 1
           nodes-max: 2
-          
+
   deploy-to-eks:
     <<: *python_cluster_docker_image
     steps:
@@ -151,7 +151,6 @@ jobs:
           command: |
             cd ./client/deployment
             export CLIENT_ID=$(echo -n '${CLIENT_ID}' | base64)
-            echo $CLIENT_ID
             cat secrets_tmpl.yml |\
               sed "s|ENV|${ENV}|\
               g;s|CLIENT_ID|$CLIENT_ID|g" > secrets.yml
@@ -159,7 +158,7 @@ jobs:
           name: config configmap
           command: |
             export REACT_APP_API_ID=$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)
-            cat $REACT_APP_API_ID
+            echo $REACT_APP_API_ID
             cd ./client/deployment
             cat configmap_tmpl.yml |\
               sed "s|ENV|${ENV}|\
