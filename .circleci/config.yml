@@ -47,7 +47,7 @@ jobs:
 workflows:
   deployment-workflow:
     jobs:
-      - build-backend
+      - build-backend:
           filters:
             branches:
               only: [dev]
