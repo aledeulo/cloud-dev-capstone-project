@@ -75,10 +75,11 @@ jobs:
       - run:
           name: Build Docker image
           command: |
+            echo "${DOCKER_PASSWORD} and ${DOCKER_USER}" &&\
             cd ./client &&\
             docker build -t $IMAGE_NAME:latest . &&\
-            docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME $DOCKER_USER/$IMAGE_NAME:latest &&\
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin &&\
+            docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME ${DOCKER_USER}/$IMAGE_NAME:latest &&\
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USER}" --password-stdin &&\
             docker push $IMAGE_NAME:latest
   
   deploy-serverless-backend:
@@ -149,16 +150,16 @@ workflows:
   deployment-workflow:
 
     jobs:
-      - create-aws-eks:
-          filters:
-            branches:
-              only: [main, dev]
-      - build-backend:
-          filters:
-            branches:
-              only: [main, dev]
-      - deploy-serverless-backend:
-          requires: [build-backend]
+      # - create-aws-eks:
+      #     filters:
+      #       branches:
+      #         only: [main, dev]
+      # - build-backend:
+      #     filters:
+      #       branches:
+      #         only: [main, dev]
+      # - deploy-serverless-backend:
+      #     requires: [build-backend]
       - build-client:
           filters:
             branches:
