@@ -1,4 +1,4 @@
-service: serverless-todo-app-ENV_NAME
+service: cloud-backend-app
 
 plugins:
   - serverless-webpack

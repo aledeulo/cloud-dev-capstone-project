@@ -10,6 +10,10 @@ node_docker_image: &node_docker_image
     - image: cimg/node:12.16
       user: root
 
+python_cluster_docker_image: &python_cluster_docker_image
+  docker:
+    - image: cimg/python:3.10
+
 commands:
   install_aws_cli:
     description: Configure aws cli to deploy resources
@@ -25,9 +29,8 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-              aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-              aws cloudformation delete-stack --stack-name udapeople-frontend-stack-${CIRCLE_WORKFLOW_ID:0:7}
-              aws cloudformation delete-stack --stack-name udapeople-backend-stack-${CIRCLE_WORKFLOW_ID:0:7}
+               aws s3 rm s3://my-bucket-todo-images-dev --recursive  --profile udacity-serverless
+               aws cloudformation delete-stack --stack-name cloud-backend-app
 
 jobs:
   build-backend:
@@ -59,6 +62,31 @@ jobs:
           paths: 
             - ./node_modules
           key: frontend-build-{{ checksum "./client/package.json" }}
+
+  build-client-image:
+    environment:
+      IMAGE_NAME: ${DOCKER_USER}/client-app
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: docker build -t $IMAGE_NAME:latest .
+
+  publish-client-image:
+    environment:
+      IMAGE_NAME: client-app
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+            docker push $IMAGE_NAME:latest
   
   deploy-serverless-backend:
     <<: *node_docker_image
@@ -94,20 +122,55 @@ jobs:
       - run:
           name: Deploy backend
           command: cd ./backend && serverless deploy --aws-region ${AWS_REGION}
+
+  create-aws-eks:
+      <<: *python_cluster_docker_image
+      steps:
+        - checkout
+        - install_aws_cli
+        - run:
+            name: check if the cluster exist
+            command: |
+              export VALIDATE=$(aws eks describe-cluster --name ${ENV}-cluster --query 'cluster.name')
+              echo "$VALIDATE" > ~/validate
+              if cat ~/validate | grep "${ENV}-cluster"
+              then
+                  echo "Cluster ${ENV}-cluster already exist. Skipping job"
+                  circleci-agent step halt
+                  exit 0
+              else
+                  echo "Attempting to create the cluster $ENV-cluster"
+              fi
+        - aws-eks/create-cluster:
+            cluster-name: ${ENV}-cluster 
+            aws-region: ${AWS_REGION}
+            nodegroup-name: ${ENV}-workers
+            node-type: t3.medium
+            nodes-min: 1
+            nodes-max: 2
       
 
 
 workflows:
   deployment-workflow:
     jobs:
-      - build-backend:
+      - create-aws-eks:
           filters:
             branches:
               only: [main, dev]
-      - build-client:
+      - build-backend:
           filters:
             branches:
               only: [main, dev]
       - deploy-serverless-backend:
           requires: [build-backend]
+      - build-client:
+          filters:
+            branches:
+              only: [main, dev]      
+      - build-client-image:
+          requires: [build-client]
+      - publish-client-image:
+          requires: [build-client-image]
+      
 
