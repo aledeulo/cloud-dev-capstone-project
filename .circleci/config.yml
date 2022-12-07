@@ -29,8 +29,8 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-               aws s3 rm s3://my-bucket-todo-images-dev --recursive  --profile udacity-serverless
-               aws cloudformation delete-stack --stack-name cloud-backend-app
+               aws s3 rm s3://my-bucket-todo-images-${ENV} --recursive
+               aws cloudformation delete-stack --stack-name cloud-backend-app-${ENV}
 
 jobs:
   build-backend:
@@ -65,7 +65,7 @@ jobs:
 
   build-client-image:
     environment:
-      IMAGE_NAME: ${DOCKER_USER}/client-app
+      IMAGE_NAME: client-app
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
@@ -74,6 +74,7 @@ jobs:
       - run:
           name: Build Docker image
           command: docker build -t $IMAGE_NAME:latest .
+            docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME ${DOCKER_USER}/$IMAGE_NAME:latest
 
   publish-client-image:
     environment:
@@ -118,36 +119,36 @@ jobs:
           name: Configure serverless 
           command: |
             cd ./backend &&\
-            sls config credentials --provider aws --key ${AWS_ACCESS_KEY_ID} --secret ${AWS_SECRET_KEY_VALUE}
+            sls config credentials --provider aws --key ${AWS_ACCESS_KEY_ID} --secret ${AWS_SECRET_ACCESS_KEY}
       - run:
           name: Deploy backend
           command: cd ./backend && serverless deploy --aws-region ${AWS_REGION}
 
   create-aws-eks:
-      <<: *python_cluster_docker_image
-      steps:
-        - checkout
-        - install_aws_cli
-        - run:
-            name: check if the cluster exist
-            command: |
-              export VALIDATE=$(aws eks describe-cluster --name ${ENV}-cluster --query 'cluster.name')
-              echo "$VALIDATE" > ~/validate
-              if cat ~/validate | grep "${ENV}-cluster"
-              then
-                  echo "Cluster ${ENV}-cluster already exist. Skipping job"
-                  circleci-agent step halt
-                  exit 0
-              else
-                  echo "Attempting to create the cluster $ENV-cluster"
-              fi
-        - aws-eks/create-cluster:
-            cluster-name: ${ENV}-cluster 
-            aws-region: ${AWS_REGION}
-            nodegroup-name: ${ENV}-workers
-            node-type: t3.medium
-            nodes-min: 1
-            nodes-max: 2
+    <<: *python_cluster_docker_image
+    steps:
+      - checkout
+      - install_aws_cli
+      - run:
+          name: check if the cluster exist
+          command: |
+            export VALIDATE=$(aws eks describe-cluster --name ${ENV}-cluster --query 'cluster.name')
+            echo "$VALIDATE" > ~/validate
+            if cat ~/validate | grep "${ENV}-cluster"
+            then
+                echo "Cluster ${ENV}-cluster already exist. Skipping job"
+                circleci-agent step halt
+                exit 0
+            else
+                echo "Attempting to create the cluster $ENV-cluster"
+            fi
+      - aws-eks/create-cluster:
+          cluster-name: ${ENV}-cluster 
+          aws-region: ${AWS_REGION}
+          nodegroup-name: ${ENV}-workers
+          node-type: t3.medium
+          nodes-min: 1
+          nodes-max: 2
       
 
 
