@@ -64,7 +64,7 @@ jobs:
             - ./node_modules
           key: frontend-build-{{ checksum "./client/package.json" }}
 
-  build-client-image:
+  build-and-push-client-image:
     environment:
       IMAGE_NAME: client-app
     docker:
@@ -75,19 +75,9 @@ jobs:
       - run:
           name: Build Docker image
           command: |
+            cd ./client &&\
             docker build -t $IMAGE_NAME:latest ./client &&\
-            docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME ${DOCKER_USER}/$IMAGE_NAME:latest
-
-  publish-client-image:
-    environment:
-      IMAGE_NAME: client-app
-    docker:
-      - image: circleci/buildpack-deps:stretch
-    steps:
-      - setup_remote_docker
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
+            docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME ${DOCKER_USER}/$IMAGE_NAME:latest &&\
             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin &&\
             docker push $IMAGE_NAME:latest
   
@@ -106,7 +96,7 @@ jobs:
             cd ./backend &&\
             cat serverless_temp.yml |\
             sed "s|ENV_NAME|${ENV}|\
-            g;s|AWS_REGION|${AWS_REGION}|g" > serverless.yml &&\
+            g;s|AWS_REGION|${AWS_DEFAULT_REGION}|g" > serverless.yml &&\
             cat serverless.yml
       - run:
           name: Install serverless plugins
@@ -124,7 +114,7 @@ jobs:
             sls config credentials --provider aws --key ${AWS_ACCESS_KEY_ID} --secret ${AWS_SECRET_ACCESS_KEY}
       - run:
           name: Deploy backend
-          command: cd ./backend && serverless deploy --aws-region ${AWS_REGION}
+          command: cd ./backend && serverless deploy --aws-region ${AWS_DEFAULT_REGION}
 
   create-aws-eks:
     <<: *python_cluster_docker_image
@@ -147,7 +137,7 @@ jobs:
             fi
       - aws-eks/create-cluster:
           cluster-name: ${ENV}-cluster 
-          aws-region: ${AWS_REGION}
+          aws-region: ${AWS_DEFAULT_REGION}
           nodegroup-name: ${ENV}-workers
           node-type: t3.medium
           nodes-min: 1
@@ -173,9 +163,7 @@ workflows:
           filters:
             branches:
               only: [main, dev]      
-      - build-client-image:
+      - build-and-push-client-image:
           requires: [build-client]
-      - publish-client-image:
-          requires: [build-client-image]
       
 
