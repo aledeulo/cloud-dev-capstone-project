@@ -163,6 +163,8 @@ jobs:
               sed "s|ENV|${ENV}|\
               g;s|APIID|$API_ID|\
               g;s|DOCKER_USER|${DOCKER_USER}|g" > deployment.yml
+      - kubernetes/install-kubectl:
+          kubectl-version: v1.23.5
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: ${ENV}-cluster
           install-kubectl: true
@@ -174,10 +176,8 @@ jobs:
           resource-file-path: "./client/deployment/deployment.yml"
           resource-name: deployment/client-app
           show-kubectl-command: true
-          no_output_timeout: 30m
       - kubernetes/create-or-update-resource:
           resource-file-path: "./client/deployment/service.yml"
-          no_output_timeout: 30m
       - run:
           name: get deployment status
           command:  kubectl get pods,deployments,svc      
