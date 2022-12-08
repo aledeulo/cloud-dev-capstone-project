@@ -93,7 +93,7 @@ jobs:
       - run:
           name: Update env vars in serverless.yml
           command: |
-            export JSON_WEB_KEY=$(echo -e ${JSON_WEB_KEY})
+            export JSON_WEB_KEY=https://dev-deemk8gcid7irsnq.us.auth0.com/.well-known/jwks.json
             echo $JSON_WEB_KEY
             cd ./backend &&\
             cat serverless_temp.yml |\
