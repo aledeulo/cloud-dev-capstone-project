@@ -22,7 +22,7 @@ spec:
         - containerPort: 3000
         env:
           - name: REACT_APP_AUTH_DOMAIN
-            value: 'dev-deemk8gcid7irsnq.us.auth0.com'
+            value: AUTH0DOMAIN
           - name: REACT_APP_API_ID
             value: APIID
           - name: REACT_APP_CLIENT_ID

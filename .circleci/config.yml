@@ -168,6 +168,7 @@ jobs:
             cat deployment_tmpl.yml |\
               sed "s|ENV|${ENV}|\
               g;s|APIID|$API_ID|\
+              g;s|AUTH0DOMAIN|${AUTH_DOMAIN}|\
               g;s|DOCKER_USER|${DOCKER_USER}|g" > deployment.yml
       - kubernetes/install-kubectl:
           kubectl-version: v1.23.5
