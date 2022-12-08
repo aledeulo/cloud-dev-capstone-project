@@ -27,8 +27,4 @@ spec:
           - name: REACT_APP_API_ID
             value: APIID
           - name: REACT_APP_CLIENT_ID
-            valueFrom:
-              secretKeyRef:
-                name: ENV-secret
-                key: REACT_APP_CLIENT_ID
-                optional: false
+            value: PoiziALSBz64UYrMyHPXD5eZeQtu6mwb
