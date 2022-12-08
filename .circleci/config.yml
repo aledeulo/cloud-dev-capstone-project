@@ -156,9 +156,7 @@ jobs:
           name: config secrets
           command: |
             cd ./client/deployment
-            export CLIENT=${CLIENT_ID}
-            export CLIENT_ID=$(echo -n $CLIENT | base64)
-            echo -n $CLIENT_ID | base64 --decode
+            export CLIENT_ID=$(echo -n 'PoiziALSBz64UYrMyHPXD5eZeQtu6mwb' | base64)
             cat secrets_tmpl.yml |\
               sed "s|ENV|${ENV}|\
               g;s|CID|$CLIENT_ID|g" > secrets.yml
