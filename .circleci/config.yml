@@ -155,7 +155,7 @@ jobs:
           name: config secrets
           command: |
             cat ./client/deployment/secrets_tmpl.yml |\
-              sed "s|ENV|${ENV}g" > ./client/deployment/secrets.yml
+              sed "s|ENV|${ENV}|g" > ./client/deployment/secrets.yml
       - run:
           name: config deployment
           command: |
