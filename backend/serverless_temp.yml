@@ -40,6 +40,7 @@ provider:
     TODOS_CREATED_BY_INDEX: CreatedByIndex-${self:provider.stage}
     ATTACHMENT_S3_BUCKET: todo-attachment-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
+    JSON_WEB_KEY: JSONWEBKEY
 
   logs:
     # Enable API Gateway logs
