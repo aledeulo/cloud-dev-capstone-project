@@ -93,12 +93,9 @@ jobs:
       - run:
           name: Update env vars in serverless.yml
           command: |
-            export JSON_WEB_KEY=https://dev-deemk8gcid7irsnq.us.auth0.com/.well-known/jwks.json
-            echo $JSON_WEB_KEY
             cd ./backend &&\
             cat serverless_temp.yml |\
             sed "s|ENV_NAME|${ENV}|\
-            sed "s|JWK|$JSON_WEB_KEY|\
             g;s|AWS_REGION|${AWS_DEFAULT_REGION}|g" > serverless.yml
       - run:
           name: Install serverless plugins
