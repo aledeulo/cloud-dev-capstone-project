@@ -93,8 +93,8 @@ jobs:
       - run:
           name: Update env vars in serverless.yml
           command: |
-            export JSON_WEB_KEY=${JSON_WEB_KEY}
-            echo JSON_WEB_KEY
+            export JSON_WEB_KEY=$(echo -e ${JSON_WEB_KEY})
+            echo $JSON_WEB_KEY
             cd ./backend &&\
             cat serverless_temp.yml |\
             sed "s|ENV_NAME|${ENV}|\
@@ -160,6 +160,7 @@ jobs:
           command: |
             cd ./client/deployment
             export CLIENT_ID=$(echo -n ${CLIENT_ID} | base64)
+            echo $CLIENT_ID
             cat secrets_tmpl.yml |\
               sed "s|ENV|${ENV}|\
               g;s|CLIENTID|$CLIENT_ID|g" > secrets.yml
