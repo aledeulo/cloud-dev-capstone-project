@@ -147,6 +147,12 @@ jobs:
       - checkout
       - install_aws_cli
       - run:
+          name: config namespace
+          command: |
+            cd ./client/deployment
+            cat namespace_tmpl.yml |\
+              sed "s|ENV|${ENV}|g" > namespace.yml
+      - run:
           name: config secrets
           command: |
             cd ./client/deployment
@@ -169,6 +175,8 @@ jobs:
           cluster-name: ${ENV}-cluster
           install-kubectl: true
           aws-region: ${AWS_DEFAULT_REGION}
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "./client/deployment/namespace.yml"
       - kubernetes/create-or-update-resource:
           resource-file-path: "./client/deployment/secrets.yml"
           namespace: ${ENV}
