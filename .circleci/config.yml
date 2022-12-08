@@ -76,7 +76,7 @@ jobs:
           name: Build Docker image
           command: |
             cd ./client &&\
-            docker build -t $IMAGE_NAME:latest . &&\
+            docker build -t $IMAGE_NAME:latest . --no-cache &&\
             docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME ${DOCKER_USER}/$IMAGE_NAME:latest &&\
             echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USER}" --password-stdin &&\
             docker push ${DOCKER_USER}/$IMAGE_NAME
@@ -163,7 +163,6 @@ jobs:
             cat ./client/deployment/deployment_tmpl.yml |\
               sed "s|ENV|${ENV}|\
               g;s|APIID|$API_ID|\
-              g;s|AUTH0DOMAIN|${AUTH_DOMAIN}|\
               g;s|DOCKER_USER|${DOCKER_USER}|g" > ./client/deployment/deployment.yml
       - kubernetes/install-kubectl:
           kubectl-version: v1.23.5
