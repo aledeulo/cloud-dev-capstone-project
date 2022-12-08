@@ -171,16 +171,19 @@ jobs:
           aws-region: ${AWS_DEFAULT_REGION}
       - kubernetes/create-or-update-resource:
           resource-file-path: "./client/deployment/secrets.yml"
+          namespace: ${ENV}
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
           resource-file-path: "./client/deployment/deployment.yml"
           resource-name: deployment/client-app
           show-kubectl-command: true
+          namespace: ${ENV}
       - kubernetes/create-or-update-resource:
           resource-file-path: "./client/deployment/service.yml"
+          namespace: ${ENV}
       - run:
           name: get deployment status
-          command:  kubectl get pods,deployments,svc      
+          command:  kubectl get pods,deployments,svc -n ${ENV}
 
 
 workflows:
