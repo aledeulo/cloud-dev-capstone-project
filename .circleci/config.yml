@@ -151,7 +151,7 @@ jobs:
           command: |
             cd ./client/deployment
             cat namespace_tmpl.yml |\
-              sed "s|ENV|${ENV}|g" > ./client/deployment/namespace.yml
+              sed "s|ENV|${ENV}|g" > namespace.yml
       - run:
           name: config secrets
           command: |
@@ -160,7 +160,7 @@ jobs:
             export CLIENT_ID=$(echo -n $CID | base64)
             cat secrets_tmpl.yml |\
               sed "s|ENV|${ENV}|\
-              g;s|CID|$CLIENT_ID|g" > ./client/deployment/secrets.yml
+              g;s|CID|$CLIENT_ID|g" > secrets.yml
       - run:
           name: config deployment
           command: |
@@ -170,7 +170,7 @@ jobs:
               sed "s|ENV|${ENV}|\
               g;s|APIID|$API_ID|\
               g;s|AUTH0DOMAIN|${AUTH_DOMAIN}|\
-              g;s|DOCKER_USER|${DOCKER_USER}|g" > ./client/deployment/deployment.yml
+              g;s|DOCKER_USER|${DOCKER_USER}|g" > deployment.yml
       - kubernetes/install-kubectl:
           kubectl-version: v1.23.5
       - aws-eks/update-kubeconfig-with-authenticator:
