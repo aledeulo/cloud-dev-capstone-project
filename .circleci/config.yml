@@ -156,9 +156,9 @@ jobs:
           name: config secrets
           command: |
             cd ./client/deployment
-            rm -f secrets.yml
-            export CID=${CLIENT_ID}
-            export CLIENT_ID=$(echo -n $CID | base64)
+            rm -f secrets.yml &&\
+            export CID=${CLIENT_ID} &&\
+            export CLIENT_ID=$(echo -n $CID | base64) &&\
             cat secrets_tmpl.yml |\
               sed "s|ENV|${ENV}|\
               g;s|CID|$CLIENT_ID|g" > secrets.yml
