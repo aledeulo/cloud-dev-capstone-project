@@ -174,8 +174,10 @@ jobs:
           resource-file-path: "./client/deployment/deployment.yml"
           resource-name: deployment/client-app
           show-kubectl-command: true
+          no_output_timeout: 30m
       - kubernetes/create-or-update-resource:
           resource-file-path: "./client/deployment/service.yml"
+          no_output_timeout: 30m
       - run:
           name: get deployment status
           command:  kubectl get pods,deployments,svc      
