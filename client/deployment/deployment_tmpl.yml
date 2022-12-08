@@ -22,15 +22,9 @@ spec:
         - containerPort: 3000
         env:
           - name: REACT_APP_AUTH_DOMAIN
-            valueFrom:
-              configMapKeyRef:
-                name: ENV-configmap
-                key: REACT_APP_AUTH_DOMAIN
+            value: 'dev-deemk8gcid7irsnq.us.auth0.com'
           - name: REACT_APP_API_ID
-            valueFrom:
-              configMapKeyRef:
-                name: ENV-configmap
-                key: REACT_APP_API_ID
+            value: APIID
           - name: REACT_APP_CLIENT_ID
             valueFrom:
               secretKeyRef:

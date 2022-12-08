@@ -155,21 +155,13 @@ jobs:
               sed "s|ENV|${ENV}|\
               g;s|CLIENT_ID|$CLIENT_ID|g" > secrets.yml
       - run:
-          name: config configmap
-          command: |
-            export REACT_APP_API_ID=$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)
-            cd ./client/deployment
-            cat configmap_tmpl.yml |\
-              sed "s|ENV|${ENV}|\
-              g;s|API_ID|${AUTH_DOMAIN}|\
-              g;s|AUTH_DOMAIN|$REACT_APP_API_ID|g" > configmap.yml
-              cat configmap.yml
-      - run:
           name: config deployment
           command: |
+            export API_ID=$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)
             cd ./client/deployment
             cat deployment_tmpl.yml |\
               sed "s|ENV|${ENV}|\
+              g;s|APIID|$API_ID|\
               g;s|DOCKER_USER|${DOCKER_USER}|g" > deployment.yml
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: ${ENV}-cluster
@@ -177,8 +169,6 @@ jobs:
           aws-region: ${AWS_DEFAULT_REGION}
       - kubernetes/create-or-update-resource:
           resource-file-path: "./client/deployment/secrets.yml"
-      - kubernetes/create-or-update-resource:
-          resource-file-path: "./client/deployment/configmap.yml"
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
           resource-file-path: "./client/deployment/deployment.yml"
