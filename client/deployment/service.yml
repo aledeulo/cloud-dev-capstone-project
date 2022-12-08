@@ -6,9 +6,10 @@ metadata:
   name: client-app
 spec:
   ports:
-  - port: 3000
+  - port: 80
     protocol: TCP
     targetPort: 3000
+    nodePort: 31000
   selector:
     app: client-app
   sessionAffinity: None
