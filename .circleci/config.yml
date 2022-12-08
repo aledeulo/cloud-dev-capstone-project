@@ -159,7 +159,7 @@ jobs:
             export CLIENT_ID=$(echo -n '${CLIENT_ID}' | base64)
             cat secrets_tmpl.yml |\
               sed "s|ENV|${ENV}|\
-              g;s|CLIENT_ID|$CLIENTID|g" > secrets.yml
+              g;s|CLIENTID|$CLIENT_ID|g" > secrets.yml
       - run:
           name: config deployment
           command: |
