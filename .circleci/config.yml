@@ -195,23 +195,23 @@ jobs:
 workflows:
   deployment-workflow:
     jobs:
-      - create-aws-eks:
-          filters:
-            branches:
-              only: [main, dev]
-      - build-backend:
-          filters:
-            branches:
-              only: [main, dev]
-      - deploy-serverless-backend:
-          requires: [build-backend]
-      - build-client:
-          filters:
-            branches:
-              only: [main, dev]      
-      - build-and-push-client-image:
-          requires: [build-client, deploy-serverless-backend]
-      - deploy-to-eks:
-          requires: [deploy-serverless-backend, build-and-push-client-image, create-aws-eks]
+      # - create-aws-eks:
+      #     filters:
+      #       branches:
+      #         only: [main, dev]
+      # - build-backend:
+      #     filters:
+      #       branches:
+      #         only: [main, dev]
+      # - deploy-serverless-backend:
+      #     requires: [build-backend]
+      # - build-client:
+      #     filters:
+      #       branches:
+      #         only: [main, dev]      
+      # - build-and-push-client-image:
+      #     requires: [build-client, deploy-serverless-backend]
+      - deploy-to-eks
+          # requires: [deploy-serverless-backend, build-and-push-client-image, create-aws-eks]
       
 
