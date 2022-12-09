@@ -160,9 +160,10 @@ jobs:
           name: config deployment
           command: |
             export API_ID=$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)
+            echo 'API_ID: ' $API_ID
             cat ./client/deployment/deployment_tmpl.yml |\
               sed "s|ENV|${ENV}|\
-              g;s|APIID|$API_ID|\
+              g;s|GATEWAY|$API_ID|\
               g;s|DOCKER_USER|${DOCKER_USER}|g" > ./client/deployment/deployment.yml
       - kubernetes/install-kubectl:
           kubectl-version: v1.23.5

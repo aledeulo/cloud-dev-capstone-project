@@ -25,6 +25,6 @@ spec:
           - name: REACT_APP_AUTH_DOMAIN
             value: dev-deemk8gcid7irsnq.us.auth0.com
           - name: REACT_APP_API_ID
-            value: APIID
+            value: GATEWAY
           - name: REACT_APP_CLIENT_ID
             value: cDJXyfCbH6DRb45uGTCjjsVaH0hkEsYo
