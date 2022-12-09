@@ -27,4 +27,4 @@ spec:
           - name: REACT_APP_API_ID
             value: GATEWAY
           - name: REACT_APP_CLIENT_ID
-            value: cDJXyfCbH6DRb45uGTCjjsVaH0hkEsYo
+            value: zlMYEtlPjLrM83fVB1INDDta7Hra62JZ
