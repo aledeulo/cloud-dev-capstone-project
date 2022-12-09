@@ -159,12 +159,14 @@ jobs:
       - run:
           name: config deployment
           command: |
-            export API_ID=$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)
-            echo 'API_ID: ' $API_ID
+            # aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text
+            # export API_ID=$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)
+            # echo 'API_ID: ' $API_ID
             cat ./client/deployment/deployment_tmpl.yml |\
               sed "s|ENV|${ENV}|\
-              g;s|GATEWAY|$API_ID|\
+              g;s|GATEWAY|$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)|\
               g;s|DOCKER_USER|${DOCKER_USER}|g" > ./client/deployment/deployment.yml
+              cat ./client/deployment/deployment.yml
       - kubernetes/install-kubectl:
           kubectl-version: v1.23.5
       - aws-eks/update-kubeconfig-with-authenticator:
