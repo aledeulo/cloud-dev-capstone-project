@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-app
+  namespace: ENV
+  labels:
+    app: client-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: client-app
+  template:
+    metadata:
+      labels:
+        app: client-app
+    spec:
+      containers:
+      - name: client-app
+        image: DOCKER_USER/client-app
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+          - name: REACT_APP_AUTH_DOMAIN
+            value: dev-deemk8gcid7irsnq.us.auth0.com
+          - name: REACT_APP_API_ID
+            value: GATEWAY
+          - name: REACT_APP_CLIENT_ID
+            value: zlMYEtlPjLrM83fVB1INDDta7Hra62JZ
