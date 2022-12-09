@@ -198,17 +198,17 @@ workflows:
       - create-aws-eks:
           filters:
             branches:
-              only: [main, dev]
+              only: [master, dev]
       - build-backend:
           filters:
             branches:
-              only: [main, dev]
+              only: [master, dev]
       - deploy-serverless-backend:
           requires: [build-backend]
       - build-client:
           filters:
             branches:
-              only: [main, dev]      
+              only: [master, dev]      
       - build-and-push-client-image:
           requires: [build-client, deploy-serverless-backend]
       - deploy-to-eks:
