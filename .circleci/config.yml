@@ -22,7 +22,7 @@ commands:
           name: install aws cli
           command: pip install awscli
   
-  destroy-serverless-deployment:
+  destroy-env:
     description: Destroy back-end cloudformation stacks given a workflow ID.    
     steps:
       - run:
@@ -31,6 +31,7 @@ commands:
           command: |
                aws s3 rm s3://my-bucket-todo-images-${ENV} --recursive 
                aws cloudformation delete-stack --stack-name cloud-backend-app-${ENV}
+               aws cloudformation delete-stack --stack-name eksctl-${ENV}-cluster-nodegroup-${ENV}-workers
                aws cloudformation delete-stack --stack-name eksctl-${ENV}-cluster-cluster
 
 jobs:
@@ -76,8 +77,8 @@ jobs:
           name: Build Docker image
           command: |
             cd ./client &&\
-            docker build -t $IMAGE_NAME:latest . --no-cache &&\
-            docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME ${DOCKER_USER}/$IMAGE_NAME:latest &&\
+            docker build -t $IMAGE_NAME:${CIRCLE_WORKFLOW_ID:0:7} . --no-cache &&\
+            docker build -t $IMAGE_NAME . && docker tag $IMAGE_NAME ${DOCKER_USER}/$IMAGE_NAME:${CIRCLE_WORKFLOW_ID:0:7} &&\
             echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USER}" --password-stdin &&\
             docker push ${DOCKER_USER}/$IMAGE_NAME
   
@@ -190,6 +191,13 @@ jobs:
       - run:
           name: get deployment status
           command:  kubectl get pods,deployments,svc -n ${ENV}
+
+  destroy-env: 
+    <<: *python_cluster_docker_image
+    steps:
+      - checkout
+      - install_aws_cli
+
 
 
 workflows:
