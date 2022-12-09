@@ -164,7 +164,7 @@ jobs:
             # echo 'API_ID: ' $API_ID
             cat ./client/deployment/deployment_tmpl.yml |\
               sed "s|ENV|${ENV}|\
-              g;s|GATEWAY|$(aws apigateway get-rest-apis --query 'items[?name==`${ENV}-cloud-backend-app`].id' --output text)|\
+              g;s|GATEWAY|${API_GATEWAY_ID}|\
               g;s|DOCKER_USER|${DOCKER_USER}|g" > ./client/deployment/deployment.yml
               cat ./client/deployment/deployment.yml
       - kubernetes/install-kubectl:
